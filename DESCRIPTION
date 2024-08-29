@@ -1,0 +1,24 @@
+Package: GGCigarAligner
+Title: BAM/SAM Read Aligner with Explicit CIGAR String Representation
+Version: 0.1.0
+Authors@R: 
+    person("Gabriele", "Gambero", , "gabriele.gambero@mail.polimi.it", role = c("aut", "cre"))
+Description: GGCigarAligner provides tools for aligning a specified read from BAM/SAM files to its reference genome using CIGAR strings. It allows for a clear representation of the alignment, including insertions, deletions, and mismatches. The package includes:
+    - `ggBamLoader`: Loads BAM/SAM files and returns a DataFrame (S4Vectors) for easier manipulation of reads.
+    - `ggCigarCligner`: Aligns a selected read from the DataFrame to the reference genome and provides a comparison of the aligned sequences.
+License: GPL-2
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests: rmarkdown, BSgenome.Hsapiens.UCSC.hg38
+Imports: 
+	knitr,
+    stringr, 
+    Rsamtools, 
+    Biostrings, 
+    BSgenome, 
+    GenomicAlignments,
+	S4Vectors,
+	BiocManager
+biocViews: Alignment, Visualization, Genomics, Sequencing
+VignetteBuilder: knitr

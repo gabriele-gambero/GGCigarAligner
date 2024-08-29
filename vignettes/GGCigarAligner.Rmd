@@ -1,0 +1,56 @@
+---
+title: "Introduction to GGCigarAligner"
+author:
+- name: "Gabriele Gambero"
+  affiliation: University of Milan
+  email: gabriele.gambero@mail.polimi.it
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Introduction to GGCigarAligner}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_vignette
+---
+
+
+```{r setup}
+library(GGCigarAligner)
+```
+
+# Introduction
+
+This vignette provides an overview of how to use the GGCigarAligner package.
+
+## Loading BAM/SAM Files
+
+You can use the `ggBamLoader` function to load BAM/SAM files:
+
+```{r}
+df_gg <- ggBamLoader("../inst/extdata/subset.bam")
+df_gg[1:5,]
+```
+
+The function will return an S4 class DataFrame. The choose of returning such a format is due to its good manipulation.
+
+
+## CIGAR alignment 
+
+For the proper alignment, based on the CIGAR string, the `ggCigarAligner` function takes as input the previously obtained DataFrame, the reference genome (which must be contained in the BSgenome package) and the qname or the index of the read.
+If the `qname` parameter is specified, the function will search based on it, however, it may happen that there is more than one read with the same qname, so, in that case, the user can specify the read using the `index` variable obtained from the DataFrame.
+
+In this example, I've purposely chosen a read whose qname is present 3 times, so that I've to use the `index` variable.
+
+```{r, warning=FALSE, message=FALSE}
+result <- ggCigarAligner(df_gg, qname = "ERR188273.4711308", index = 3, my_reference = "BSgenome.Hsapiens.UCSC.hg38")
+result
+```
+
+In the end the function will return the reference and the aligned sequence as DNAString objects for color highlighting and better usability.
+
+
+```{r}
+sessionInfo()
+```
+
+
+
