@@ -20,5 +20,5 @@ Imports:
     GenomicAlignments,
 	S4Vectors,
 	BiocManager
-biocViews: Alignment, Visualization, Genomics, Sequencing
+biocViews: Alignment, Visualization, FunctionalGenomics, SequenceMatching, DataImport
 VignetteBuilder: knitr
