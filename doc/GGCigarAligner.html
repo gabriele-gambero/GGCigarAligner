@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+<meta name="date" content="2024-08-31" />
+
+<title>Introduction to GGCigarAligner</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to GGCigarAligner</h1>
+<h4 class="author">Gabriele Gambero</h4>
+<address class="author_afil">
+University of Milan<br><a class="author_email" href="mailto:#"><a href="mailto:gabriele.gambero@mail.polimi.it" class="email">gabriele.gambero@mail.polimi.it</a></a>
+</address>
+<h4 class="date">2024-08-31</h4>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(GGCigarAligner)</span></code></pre></div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>This vignette provides an overview of how to use the GGCigarAligner
+package.</p>
+<div id="loading-bamsam-files" class="section level2">
+<h2>Loading BAM/SAM Files</h2>
+<p>You can use the <code>ggBamLoader</code> function to load BAM/SAM
+files:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>df_gg <span class="ot">&lt;-</span> <span class="fu">ggBamLoader</span>(<span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;subset.bam&quot;</span>, <span class="at">package =</span> <span class="st">&quot;GGCigarAligner&quot;</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>df_gg[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,]</span></code></pre></div>
+<pre><code>## DataFrame with 5 rows and 13 columns
+##                qname      flag    rname   strand       pos    qwidth      mapq
+##          &lt;character&gt; &lt;integer&gt; &lt;factor&gt; &lt;factor&gt; &lt;integer&gt; &lt;integer&gt; &lt;integer&gt;
+## 1  ERR188273.4711308        73     chrX       +      21649        75         0
+## 2  ERR188273.4711308       133     chrX       NA        NA        NA        NA
+## 3  ERR188273.4711308       329     chrX       +     233717        75         0
+## 4 ERR188273.14904746        99     chrX       +     251271        75        60
+## 5 ERR188273.14904746       147     chrX       -     251317        75        60
+##         cigar     mrnm      mpos     isize                     seq
+##   &lt;character&gt; &lt;factor&gt; &lt;integer&gt; &lt;integer&gt;          &lt;DNAStringSet&gt;
+## 1       5S70M     chrX        NA        NA CGGGTGATCA...AAAAATACAA
+## 2          NA     chrX     21649        NA CTACAGGTGC...TGTGTTGGCC
+## 3       5S70M     chrX        NA        NA CGGGTGATCA...AAAAATACAA
+## 4         75M     chrX    251317       121 GAAAAATGGG...TTCCCTTAGT
+## 5         75M     chrX    251271      -121 GCCGGCCCCT...AGGACAATAG
+##                      qual
+##            &lt;PhredQuality&gt;
+## 1 @@@F=DDFFH...FFFFDEACC@
+## 2 CB@FDFFFHH...DDDDDDDBCD
+## 3 @@@F=DDFFH...FFFFDEACC@
+## 4 @@&lt;DDDDDFB...CDCCCCCCCC
+## 5 #######B?D...DFDDDDD?&lt;B</code></pre>
+<p>The function will return an S4 class DataFrame. The choose of
+returning such a format is due to its good manipulation.</p>
+</div>
+<div id="cigar-alignment" class="section level2">
+<h2>CIGAR alignment</h2>
+<p>For the proper alignment, based on the CIGAR string, the
+<code>ggCigarAligner</code> function takes as input the previously
+obtained DataFrame, the reference genome (which must be contained in the
+BSgenome package) and the qname or the index of the read. If the
+<code>qname</code> parameter is specified, the function will search
+based on it, however, it may happen that there is more than one read
+with the same qname, so, in that case, the user can specify the read
+using the <code>index</code> variable obtained from the DataFrame.</p>
+<p>In this example, I’ve purposely chosen a read whose qname is present
+3 times, so that I’ve to use the <code>index</code> variable.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">ggCigarAligner</span>(df_gg, <span class="at">qname =</span> <span class="st">&quot;ERR188273.4711308&quot;</span>, <span class="at">index =</span> <span class="dv">3</span>, <span class="at">my_reference =</span> <span class="st">&quot;BSgenome.Hsapiens.UCSC.hg38&quot;</span>)</span></code></pre></div>
+<pre><code>## Strand:  1 
+## CIGAR:  5S70M 
+## The reference sequence will be 75 bases long.</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>result</span></code></pre></div>
+<pre><code>## $reference_sequence
+## 75-letter DNAString object
+## seq: -----GATCACGAGGTCAGGAGATCAAGACCATCCTGGCCAACACAGTGAAACCCCATCTCTACTAAAAATACAA
+## 
+## $aligned_sequence
+## 75-letter DNAString object
+## seq: CGGGTGATCACGAGGTCAGGAGATCAAGACCATCCTGGCCAACACAGTGAAACCCCATCTCTACTAAAAATACAA</code></pre>
+<p>In the end the function will return the reference and the aligned
+sequence as DNAString objects for color highlighting and better
+usability.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.4.1 (2024-06-14 ucrt)
+## Platform: x86_64-w64-mingw32/x64
+## Running under: Windows 10 x64 (build 19045)
+## 
+## Matrix products: default
+## 
+## 
+## locale:
+## [1] LC_COLLATE=Italian_Italy.utf8  LC_CTYPE=Italian_Italy.utf8   
+## [3] LC_MONETARY=Italian_Italy.utf8 LC_NUMERIC=C                  
+## [5] LC_TIME=Italian_Italy.utf8    
+## 
+## time zone: Europe/Rome
+## tzcode source: internal
+## 
+## attached base packages:
+## [1] stats4    stats     graphics  grDevices utils     datasets  methods  
+## [8] base     
+## 
+## other attached packages:
+##  [1] BSgenome.Hsapiens.UCSC.hg38_1.4.5 BSgenome_1.72.0                  
+##  [3] rtracklayer_1.64.0                BiocIO_1.14.0                    
+##  [5] Biostrings_2.72.1                 XVector_0.44.0                   
+##  [7] GenomicRanges_1.56.1              GenomeInfoDb_1.40.1              
+##  [9] IRanges_2.38.1                    S4Vectors_0.42.1                 
+## [11] BiocGenerics_0.50.0               GGCigarAligner_0.1.0             
+## 
+## loaded via a namespace (and not attached):
+##  [1] sass_0.4.9                  SparseArray_1.4.8          
+##  [3] bitops_1.0-8                stringi_1.8.4              
+##  [5] lattice_0.22-6              magrittr_2.0.3             
+##  [7] digest_0.6.36               evaluate_0.24.0            
+##  [9] grid_4.4.1                  fastmap_1.2.0              
+## [11] jsonlite_1.8.8              Matrix_1.7-0               
+## [13] restfulr_0.0.15             httr_1.4.7                 
+## [15] UCSC.utils_1.0.0            XML_3.99-0.17              
+## [17] codetools_0.2-20            jquerylib_0.1.4            
+## [19] abind_1.4-5                 cli_3.6.3                  
+## [21] rlang_1.1.4                 crayon_1.5.3               
+## [23] Biobase_2.64.0              cachem_1.1.0               
+## [25] DelayedArray_0.30.1         yaml_2.3.10                
+## [27] S4Arrays_1.4.1              tools_4.4.1                
+## [29] parallel_4.4.1              BiocParallel_1.38.0        
+## [31] GenomeInfoDbData_1.2.12     Rsamtools_2.20.0           
+## [33] SummarizedExperiment_1.34.0 curl_5.2.1                 
+## [35] vctrs_0.6.5                 R6_2.5.1                   
+## [37] matrixStats_1.3.0           lifecycle_1.0.4            
+## [39] stringr_1.5.1               zlibbioc_1.50.0            
+## [41] bslib_0.8.0                 glue_1.7.0                 
+## [43] xfun_0.47                   GenomicAlignments_1.40.0   
+## [45] rstudioapi_0.16.0           MatrixGenerics_1.16.0      
+## [47] knitr_1.48                  rjson_0.2.21               
+## [49] htmltools_0.5.8.1           rmarkdown_2.28             
+## [51] compiler_4.4.1              RCurl_1.98-1.16</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
